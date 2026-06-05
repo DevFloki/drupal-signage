@@ -1,14 +1,46 @@
-# UiT Infoskjermer Installation and Project Documentation
+# Drupal Signage
 
-This document explains how to install, run, configure, and maintain the Infoskjermer Drupal project.
+Drupal Signage is a Drupal-based digital signage system for managing screens, slides, playlists, scheduling, access control, and browser-based playback.
 
-The project is a Drupal 11 digital signage system. It uses Drupal as the content and administration platform, with custom modules for screen management, dashboard functionality, screen playback, access management, and slide sharing.
+The project uses Drupal as the content management and administration platform. Physical displays can open a player URL in a browser, making the playback client simple to run on hardware such as a Raspberry Pi, mini PC, or a screen with a built-in browser.
+
+## Features
+
+Current and planned functionality includes:
+
+- Screen management
+- Screen groups
+- Slide management
+- Playlist-based playback
+- Scheduling for playlist items
+- Browser-based player view
+- Dashboard for signage users
+- Screen-specific access management
+- Slide sharing between users
+- Drupal configuration export/import for reproducible setup
+
+## Project status
+
+This project is under active development.
+
+The current implementation focuses on the core digital signage workflow:
+
+```text
+Create slides
+    ↓
+Add slides to playlists
+    ↓
+Assign playlists to screens or screen groups
+    ↓
+Open the player URL on a display
+```
+
+The project is suitable for local development, testing, and continued feature development. Before production use, deployment, permissions, security hardening, backups, monitoring, and display-device setup should be reviewed for the target environment.
 
 ## Contents
 
-- [System overview](#system-overview)
 - [Requirements](#requirements)
-- [Local development setup with DDEV](#local-development-setup-with-ddev)
+- [Local development setup](#local-development-setup)
 - [Installing from exported configuration](#installing-from-exported-configuration)
 - [Installing from an existing database](#installing-from-an-existing-database)
 - [Common development commands](#common-development-commands)
@@ -19,47 +51,24 @@ The project is a Drupal 11 digital signage system. It uses Drupal as the content
 - [Player behavior](#player-behavior)
 - [Access and permissions](#access-and-permissions)
 - [Configuration management](#configuration-management)
-- [Testing and verification](#testing-and-verification)
-- [Production deployment notes](#production-deployment-notes)
+- [Testing](#testing)
+- [Production notes](#production-notes)
 - [Troubleshooting](#troubleshooting)
-
-## System overview
-
-The system is built around a central Drupal site.
-
-Users manage screens, slides, playlists, and screen access through Drupal. A physical information screen opens a player URL in a browser. The player resolves the content connected to the selected screen and displays the active playlist items in full-screen format.
-
-Typical flow:
-
-```text
-Drupal administration
-        |
-        v
-Screens, screen groups, playlists and slides
-        |
-        v
-Player URL in browser
-        |
-        v
-Information screen display
-```
-
-The browser-based player makes the display client simple to run on different hardware, such as a Raspberry Pi, mini PC, or a screen with a built-in browser.
 
 ## Requirements
 
-### Required software for local development
+### Local development
 
-Install these tools before setting up the project:
+Install the following tools before setting up the project:
 
 - Git
 - Docker or a supported Docker provider
 - DDEV
 - A terminal or shell environment
 
-Composer and Drush are run through DDEV in the local development workflow.
+Composer and Drush are normally run through DDEV during local development.
 
-### Project runtime
+### Runtime configuration
 
 The repository is configured for:
 
@@ -82,13 +91,13 @@ database:
   version: "10.11"
 ```
 
-## Local development setup with DDEV
+## Local development setup
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/infoskjermer/infoskjermer.git
-cd infoskjermer
+git clone https://github.com/DevFloki/drupal-signage.git
+cd drupal-signage
 ```
 
 Start the DDEV environment:
@@ -115,7 +124,7 @@ Open the site in a browser:
 ddev launch
 ```
 
-At this point the codebase is ready, but Drupal still needs either a site installation from exported configuration or an imported database.
+At this point the codebase is ready, but Drupal still needs either a clean installation from exported configuration or an imported database.
 
 ## Installing from exported configuration
 
@@ -145,7 +154,7 @@ Change the administrator password after setup if the environment will be shared 
 
 ## Installing from an existing database
 
-Use this method when another developer provides a database dump.
+Use this method when setting up the project from a database dump.
 
 Start DDEV and install dependencies:
 
@@ -258,17 +267,18 @@ Important paths:
     ├── modules/
     │   ├── contrib/               Contributed Drupal modules
     │   └── custom/
-    │       └── signage/           Custom project modules
+    │       └── signage/           Custom digital signage modules
     ├── sites/default/             Drupal site settings and files directory
     └── themes/                    Drupal themes
 ```
 
-The repository does not normally include:
+The repository should not include:
 
 - Local database content
 - User-uploaded files in `web/sites/default/files/`
 - Local-only settings
 - DDEV-generated runtime files
+- API keys, tokens, passwords, or environment-specific secrets
 
 ## Custom modules
 
@@ -328,11 +338,11 @@ In this example, `12` must be the node ID of a screen.
 
 ## Content model
 
-The system is based on structured Drupal content. The most important content concepts are:
+The system is based on structured Drupal content.
 
 | Concept | Description |
 |---|---|
-| Screen | A logical representation of a physical information screen. |
+| Screen | A logical representation of a physical display. |
 | Screen group | A group of screens that can share playlists. |
 | Playlist | A collection of playlist items. |
 | Playlist item | A scheduled and ordered item inside a playlist. |
@@ -340,7 +350,7 @@ The system is based on structured Drupal content. The most important content con
 | Media | Image files or other media assets used by slides. |
 | User | A Drupal user who can manage content or access assigned screens. |
 
-The player resolves playlists in two ways:
+The player can resolve playlists in two ways:
 
 1. Playlists connected directly to a screen.
 2. Playlists connected through screen groups that contain the screen.
@@ -457,7 +467,7 @@ Recommended workflow:
 6. Test the affected functionality.
 ```
 
-## Testing and verification
+## Testing
 
 ### Manual verification
 
@@ -508,21 +518,21 @@ ddev exec ./vendor/bin/phpunit
 
 If PHPUnit configuration has not been created for the local environment, create or adapt it from Drupal's example configuration before running the full test suite.
 
-## Production deployment notes
+## Production notes
 
-DDEV is for local development and should not be used as the production runtime.
+DDEV is intended for local development and should not be used as the production runtime.
 
 A production deployment should use a normal PHP web server environment with:
 
-- PHP version compatible with the installed Drupal version.
-- A supported database server.
-- Composer dependencies installed without development packages.
-- Web server document root pointing to `web/`.
-- HTTPS enabled.
-- Correct Drupal file permissions.
-- Drupal trusted host patterns configured.
-- Backups for database and uploaded files.
-- A deployment process for code, database updates, and configuration imports.
+- PHP version compatible with the installed Drupal version
+- A supported database server
+- Composer dependencies installed without development packages
+- Web server document root pointing to `web/`
+- HTTPS enabled
+- Correct Drupal file permissions
+- Trusted host patterns configured
+- Database and uploaded-file backups
+- A deployment process for code, database updates, and configuration imports
 
 Typical production deployment flow:
 
@@ -629,3 +639,7 @@ Assign it to the correct Drupal role, then clear cache:
 ```bash
 ddev drush cr
 ```
+
+## License
+
+See [`LICENSE.txt`](LICENSE.txt).
