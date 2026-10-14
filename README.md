@@ -4,6 +4,8 @@ Drupal Signage is a Drupal-based digital signage system for managing screens, sl
 
 The project uses Drupal as the content management and administration platform. Physical displays can open a player URL in a browser, making the playback client simple to run on hardware such as a Raspberry Pi, mini PC, or a screen with a built-in browser.
 
+**Technologies:** PHP, Drupal 11, MariaDB, Docker, DDEV
+
 ## Features
 
 Current and planned functionality includes:
@@ -20,8 +22,6 @@ Current and planned functionality includes:
 - Drupal configuration export/import for reproducible setup
 
 ## Project status
-
-This project is under active development.
 
 The current implementation focuses on the core digital signage workflow:
 
